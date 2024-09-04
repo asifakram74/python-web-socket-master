@@ -1,0 +1,11 @@
+<div class="chat-container">
+  <h1>Sync Hub</h1>
+  <h2>Chat with WebSocket</h2>
+  <div class="messages">
+    <div *ngFor="let msg of messages" class="message" [ngClass]="msg.type">
+      {{ msg.content }}
+    </div>
+  </div>
+  <input [(ngModel)]="message" placeholder="Type a message" />
+  <button (click)="sendMessage()">Send</button>
+</div>

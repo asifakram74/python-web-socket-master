@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13  # Use PostgreSQL version 13 as the database service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/  # Persist PostgreSQL data to a Docker volume
+    environment:
+      POSTGRES_DB: synchub_db  # Name of the PostgreSQL database
+      POSTGRES_USER: postgres  # Username for PostgreSQL
+      POSTGRES_PASSWORD: 123456  # Password for the PostgreSQL user
+    ports:
+      - "5432:5432"  # Expose port 5432 for PostgreSQL
+
+  redis:
+    image: redis:6.2  # Use Redis version 6.2 as the caching service
+    ports:
+      - "6379:6379"  # Expose port 6379 for Redis
+
+  web:
+    build: .  # Build the web service from the Dockerfile in the current directory
+    command: daphne -b 0.0.0.0 -p 8000 sync_hub.asgi:application  # Command to run the Django application using Daphne
+    volumes:
+      - .:/app  # Mount the current directory to /app inside the container for live code changes
+    ports:
+      - "8000:8000"  # Expose port 8000 for the web service
+    depends_on:
+      - db  # Ensure the db service is started before the web service
+      - redis  # Ensure the redis service is started before the web service
+    environment:
+      DJANGO_SETTINGS_MODULE: sync_hub.settings  # Set the Django settings module environment variable
+      DATABASE_URL: postgres://postgres:123456@db:5432/synchub_db  # Database URL used by Django to connect to PostgreSQL
+      REDIS_URL: redis://redis:6379/1  # Redis URL used by Django for caching
+
+volumes:
+  postgres_data:
+    # Volume to persist PostgreSQL data
